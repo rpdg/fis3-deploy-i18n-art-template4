@@ -1,6 +1,6 @@
 # fis3-deploy-i18n-art-template4 
 
-在前端的工程构建工具[FIS3](http://fis.baidu.com/)发布(deploy)阶段，将所有拥有`isHtmlLike: true`的文件包含的多语言标记替换成指定内容，并生成文件的插件。
+在前端的工程构建工具[FIS3](http://fis.baidu.com/)发布(deploy)阶段，将所有拥有`isHtmlLike: true`的文件（如：html; tpl; php; ...）包含的多语言标记替换成指定内容，并生成多份页面文件。
 
 ## 使用说明
 ### 安装
@@ -43,7 +43,7 @@ npm install -g fis3-deploy-i18n-art-template4
 └── package.json
 ```
 
-### 配置`fis-conf.js`中`fis3-deploy-i18n-ejs`相关的内容
+### 配置`fis-conf.js`的内容
 ``` javascript
 // ------ deploy ------
 
@@ -60,7 +60,7 @@ fis.match("**", {
 });
 
 // ------ translations ------
-fis.match('/locales/**', {
+fis.match('/langs/**', {
   release: false //避免生成出语言包文件
 });
 
