@@ -67,7 +67,7 @@ fis.match('/langs/**', {
 ```
 
 ### `langs`中的文件内容示例
-langs/en.json
+`langs/en.json`
 ```
 {
     "hello": "hello",
@@ -75,7 +75,7 @@ langs/en.json
 }
 ```
 
-langs/cn.json
+`langs/cn.json`
 ```
 {
     "hello": "你好",
@@ -84,19 +84,29 @@ langs/cn.json
 ```
 
 ### `pages`待转换的文件夹
-#### `pages/index.html`
+- #### `pages/index.html`
 ```
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>index</title>
 </head>
 <body>
     <p>[i18n hello], [i18n world ]!</p>
 </body>
 </html>
 ```
+#### `pages/index.json`
+```
+{
+  "i18n" :{
+    "en" : {
+      "hello" : "hola" ,
+      "world" : "mundo"
+    }
+  }
+}
 
+```
 ### 输出结果
 #### 语言为`cn`的输出结果：
 - `pages/index_cn.html`
@@ -104,7 +114,6 @@ langs/cn.json
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>index</title>
 </head>
 <body>
     <p>你好,世界!</p>
@@ -114,14 +123,14 @@ langs/cn.json
 
 #### 语言为`en`的输出结果：
 - `pages/index_en.html`
+- `输出文字被文件同名的json中的i18n字段覆盖`
 ```
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>index</title>
 </head>
 <body>
-    <p>hello,world!</p>
+    <p>hola, mundo!</p>
 </body>
 </html>
 ```

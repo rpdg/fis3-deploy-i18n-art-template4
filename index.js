@@ -1,16 +1,32 @@
 "use strict";
-var fs = require("fs");
-var path = require("path");
-var template = require("art-template");
-var jsonfile = require("jsonfile");
-var deepmerge = require("deepmerge");
+const fs = require("fs");
+const path = require("path");
+const template = require("art-template");
+const jsonfile = require("jsonfile");
+const deepmerge = require("deepmerge");
+/**
+ * 读取同名json配置
+ * @param file 页面文件
+ */
+function readConfig(file) {
+    const jsonFile = file.realpathNoExt + ".json";
+    let data;
+    if (fs.existsSync(jsonFile)) {
+        data = jsonfile.readFileSync(jsonFile);
+    }
+    else {
+        data = {};
+    }
+    //data = deepmerge({} , data) ;
+    return data["i18n"];
+}
+const DEFAULT_CONFIG = {
+    rule: /<i18n ([\w\W]*?)\/>/,
+    directory: "locales",
+    output: "/$lang/$dir/$file"
+};
 module.exports = function (cfg, modified, total, next) {
-    var option = {
-        rule: /<i18n ([\w\W]*?)\/>/,
-        directory: "locales",
-        output: "/$lang/$dir/$file"
-    };
-    option = deepmerge(option, cfg);
+    let option = deepmerge(DEFAULT_CONFIG, cfg);
     template.defaults.rules.length = 0;
     template.defaults.rules[0] = {
         test: option.rule,
@@ -22,34 +38,45 @@ module.exports = function (cfg, modified, total, next) {
         }
     };
     //read i18n language json file
-    var langList = {};
-    var projectRoot = fis.project.getProjectPath();
-    var langJsonDir = path.join(projectRoot, option.directory);
-    fs.readdirSync(langJsonDir).forEach(function (file) {
-        var langPrefix = /^(.*[^\s])\.json$/.exec(file);
+    let langList = {};
+    const projectRoot = fis.project.getProjectPath();
+    const langJsonDir = path.join(projectRoot, option.directory);
+    fs.readdirSync(langJsonDir).forEach(file => {
+        let langPrefix = /^(.*[^\s])\.json$/.exec(file);
         if (langPrefix && langPrefix[1]) {
-            langList[langPrefix[1]] = jsonfile.readFileSync(langJsonDir + "/" + file);
+            langList[langPrefix[1]] = jsonfile.readFileSync(path.join(langJsonDir, file));
         }
     });
-    var distHtmlFiles = [];
+    let distHtmlFiles = [];
     //generate html file from i18n file and template file
-    modified.forEach(function (file, i) {
-        if (file.isHtmlLike) {
-            var render = template.compile(file.getContent());
-            for (var lang in langList) {
-                var content = render(langList[lang]);
-                var distfile = option.output.replace("$lang", lang);
+    modified.forEach((file, i) => {
+        if (file && file.isHtmlLike) {
+            let render = template.compile(file.getContent());
+            let localData = readConfig(file);
+            let langData;
+            if (localData) {
+                let allData = [{}, langList, localData];
+                langData = deepmerge.all(allData);
+            }
+            else {
+                langData = langList;
+            }
+            for (let lang in langData) {
+                let content = render(langData[lang]);
+                let distfile = option.output.replace("$lang", lang);
                 distfile = distfile.replace("$dir", file.subdirname);
                 distfile = distfile.replace("$file", file.filename);
                 distfile += file.ext;
-                var htmlFile = fis.file(path.join(projectRoot, distfile));
+                let htmlFile = fis.file(path.join(projectRoot, distfile));
                 htmlFile.setContent(content);
                 distHtmlFiles.push(htmlFile);
             }
-            modified[i] = null;
+            if (Object.keys(langData).length) {
+                modified[i] = null;
+            }
         }
     });
-    var i = modified.length;
+    let i = modified.length;
     while (i--) {
         if (modified[i] === null) {
             modified.splice(i, 1);
@@ -57,7 +84,7 @@ module.exports = function (cfg, modified, total, next) {
     }
     //modified = modified.filter(v => v!==null);
     //add to deplay file array
-    distHtmlFiles.forEach(function (file) {
+    distHtmlFiles.forEach(file => {
         modified.push(file);
     });
     //invoke the next deploy plugin
