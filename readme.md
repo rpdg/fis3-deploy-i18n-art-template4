@@ -5,7 +5,7 @@
 ## 使用说明
 ### 安装
 ```shell
-npm install -g fis3-deploy-i18n-art-template4
+npm install -g git+https://github.com/rpdg/fis3-deploy-i18n-art-template4
 ```
 
 ### 默认配置
